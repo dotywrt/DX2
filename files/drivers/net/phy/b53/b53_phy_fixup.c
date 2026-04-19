@@ -47,7 +47,7 @@ static int b53_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static int __init b53_phy_fixup_register(void)
+int __init b53_phy_fixup_register(void)
 {
 	return phy_register_fixup_for_id(PHY_ANY_ID, b53_phy_fixup);
 }

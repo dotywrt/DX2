@@ -506,9 +506,15 @@ static int b53_configure_ports_of(struct b53_device *dev)
 		if (fixed_link) {
 			u32 spd;
 			u8 po = GMII_PO_LINK;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0)
 			phy_interface_t mode;
+#else
+			int mode = of_get_phy_mode(pn);
+#endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0)
 			of_get_phy_mode(pn, &mode);
+#endif
 
 			if (!of_property_read_u32(fixed_link, "speed", &spd)) {
 				switch (spd) {
@@ -551,11 +557,9 @@ static int b53_configure_ports_of(struct b53_device *dev)
 				    mode == PHY_INTERFACE_MODE_REVMII) {
 					b53_read8(dev, B53_CTRL_PAGE,
 						  B53_PORT_OVERRIDE_CTRL, &po);
-					if (!(po & PORT_OVERRIDE_RV_MII_25)) {
-						pr_err("Failed to enable reverse MII mode\n");
-						of_node_put(dn);
-						return -EINVAL;
-					}
+					if (!(po & PORT_OVERRIDE_RV_MII_25))
+					pr_err("Failed to enable reverse MII mode\n");
+					return -EINVAL;
 				}
 			} else {
 				po |= GMII_PO_EN;
@@ -847,7 +851,7 @@ static int b53_vlan_set_ports(struct switch_dev *dev, struct switch_val *val)
 		if (!(port->flags & BIT(SWITCH_PORT_FLAG_TAGGED))) {
 			vlan->untag |= BIT(port->id);
 			priv->ports[port->id].pvid = val->port_vlan;
-		}
+		};
 	}
 
 	/* ignore disabled ports */
